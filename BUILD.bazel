@@ -1,0 +1,55 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//:vitest/package_json.bzl", vitest_bin = "bin")
+
+# This macro expands to a link_npm_package for each third-party package in package.json
+npm_link_all_packages(name = "node_modules")
+
+SRCS = [
+    "tsconfig.config.json",
+    "tsconfig.json",
+    "env.d.ts",
+]
+
+BUILD_DEPS = [":node_modules/" + d for d in [
+    "@vitejs/plugin-vue",
+    "@vitejs/plugin-vue-jsx",
+    "@vue/tsconfig",
+    "vite",
+]]
+
+vitest_bin.vitest_test(
+    name = "static_vitest",
+    args = [
+        "run",
+        "--config=$(execpath :static_vite.config.ts)",
+    ],
+    data = SRCS + BUILD_DEPS + [
+        "static_import.test.ts",
+        "static_vite.config.ts",
+    ],
+)
+
+vitest_bin.vitest_test(
+    name = "static_extra_import_vitest",
+    args = [
+        "run",
+        "--config=$(execpath :static_vite.config.ts)",
+    ],
+    data = SRCS + BUILD_DEPS + [
+        "static_import.test.ts",
+        "static_vite.config.ts",
+        ":node_modules/vitest",
+    ],
+)
+
+vitest_bin.vitest_test(
+    name = "global_vitest",
+    args = [
+        "run",
+        "--config=$(execpath :global_vite.config.ts)",
+    ],
+    data = SRCS + BUILD_DEPS + [
+        "global_import.test.ts",
+        "global_vite.config.ts",
+    ],
+)
